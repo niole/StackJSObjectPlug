@@ -5,7 +5,6 @@ import re
 """
 TODO
 * indentation
-* dangling commas
 * stacking objects with other code on the same line
 """
 
@@ -44,6 +43,12 @@ def addToLast(parsed, toAdd):
 
 def getFailure(parsed):
     return parsed[0], parsed[1], True
+
+def optionalParse(parsed, parser):
+    output = parser(parsed)
+    if output[2]:
+        return parsed
+    return output
 
 def isDeclaration(parsed):
     tokens = parsed[1]
@@ -86,7 +91,7 @@ def isObjectContents(parsed):
     parsedComma = isComma(parsedSingleObjectContent)
     if parsedComma[2]:
         return parsedSingleObjectContent
-    return isObjectContents(parsedComma)
+    return optionalParse(parsedComma, isObjectContents)
 
 def isClosedParen(parsed):
     tokens = parsed[1]
@@ -95,12 +100,15 @@ def isClosedParen(parsed):
         return appendNextParsed(parsed, mutator, 0)
     return getFailure(parsed)
 
-def isOptionalSemicolon(parsed):
+def isSemicolon(parsed):
     tokens = parsed[1]
     if len(tokens) > 0 and tokens[0].value == ';':
         mutator = lambda cloned: addToLast(cloned, ';')
         return appendNextParsed(parsed, mutator, 0)
-    return parsed
+    return getFailure(parsed)
+
+def isOptionalSemicolon(parsed):
+    return optionalParse(parsed, isSemicolon)
 
 def isObject(parsed):
     parsedOpenParen = isOpenParen(parsed)
