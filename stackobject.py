@@ -11,20 +11,33 @@ TODO
 
 isJSDeclarator = re.compile('var|let|const')
 
+"""
+safely gets tokens after a certain index
+if no more tokens exist, gets an empty list
+"""
 def safeNext(parsed, afterIndex):
     tokens = parsed[1]
     if len(tokens) > afterIndex + 1:
         return tokens[afterIndex + 1:]
     return []
 
+"""
+shallowly copies a list
+"""
 def clone(l):
     return l[0:]
 
+"""
+adds successfully parsed tokens to output and facillitates next parse
+"""
 def appendNextParsed(prevParsed, parsedMutatingAppend, afterIndex):
     clonedParsed = clone(prevParsed[0])
     parsedMutatingAppend(clonedParsed)
     return clonedParsed, safeNext(prevParsed, afterIndex), False
 
+"""
+adds toAdd to last element of parsed list
+"""
 def addToLast(parsed, toAdd):
     parsed[len(parsed) - 1] = parsed[len(parsed) - 1] + toAdd
     return parsed
@@ -108,6 +121,9 @@ def isDeclaredObject(parsed):
         return parsedDeclaration
     return isObject(parsedDeclaration)
 
+"""
+kick off parse
+"""
 def parseObject(code):
     tokens = esprima.tokenize(code)
     return isDeclaredObject(([], tokens, False))
@@ -122,9 +138,7 @@ class Main(object):
 
     @neovim.command('Sobj', range='', nargs='*', sync=True)
     def command_handler(self, args, range):
-        toStack = self.vim.current.line
-        tokens = esprima.tokenize(toStack)
-        parsedObject = isDeclaredObject(([], tokens, False))
+        parsedObject = parseObject(self.vim.current.line)
         if not parsedObject[2]:
             index = self.get_current_line_number()
             parsed = parsedObject[0]
