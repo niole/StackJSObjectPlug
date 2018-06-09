@@ -62,7 +62,7 @@ def isDeclaration(parsed):
 def isOpenParen(parsed):
     tokens = parsed[1]
     if len(tokens) > 0 and tokens[0].value == '{':
-        mutator = lambda cloned: cloned.append('{')
+        mutator = lambda cloned: addToLast(cloned, ' {')
         return appendNextParsed(parsed, mutator, 0)
 
     return getFailure(parsed)
