@@ -2,6 +2,13 @@ import neovim
 import esprima
 import re
 
+"""
+TODO
+* indentation
+* dangling commas
+* stacking objects with other code on the same line
+"""
+
 isJSDeclarator = re.compile('var|let|const')
 
 def safeNext(parsed, afterIndex):
