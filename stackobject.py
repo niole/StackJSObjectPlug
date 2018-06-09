@@ -4,9 +4,10 @@ import re
 
 """
 TODO
-* indentation
 * stacking objects with other code on the same line
 """
+
+isStartingSpaces = re.compile('^\s*')
 
 isJSDeclarator = re.compile('var|let|const')
 
@@ -141,6 +142,17 @@ class Main(object):
     def __init__(self, vim):
         self.vim = vim
 
+    def format_with_tabs(self, parsed):
+        preparse = self.vim.current.line
+        match = isStartingSpaces.match(preparse)
+        if match != None:
+            found = match.group()
+            start = [found + parsed[0]]
+            end = [found + parsed[len(parsed) - 1]]
+            middle = [ found + '\t' + p for p in  parsed[1:len(parsed) - 1]]
+            return start + middle + end
+        return parsed
+
     def get_current_line_number(self):
         return self.vim.current.window.cursor[0]
 
@@ -149,6 +161,6 @@ class Main(object):
         parsedObject = parseObject(self.vim.current.line)
         if not parsedObject[2]:
             index = self.get_current_line_number()
-            parsed = parsedObject[0]
+            parsed = self.format_with_tabs(parsedObject[0])
             self.vim.current.line = parsed[0]
             self.vim.current.buffer.append(parsed[1:], index)
