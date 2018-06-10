@@ -4,7 +4,11 @@ import re
 
 """
 TODO
-* stacking objects with other code on the same line
+* nested objects
+* es6 destructuring
+* destructuring in functions
+
+it would be a lot easier to do this if i tokenized myself
 """
 
 isStartingSpaces = re.compile('^\s*')
@@ -76,6 +80,15 @@ def isSingleObjectContent(parsed):
 
     return getFailure(parsed)
 
+def isSingleES6ObjectContent(parsed):
+    tokens = parsed[1]
+    if len(tokens) > 0:
+        if tokens[0].type == 'Identifier':
+            mutator = lambda cloned: cloned.append(tokens[0].value)
+            return appendNextParsed(parsed, mutator, 0)
+
+    return getFailure(parsed)
+
 def isComma(parsed):
     tokens = parsed[1]
     if len(tokens) > 0:
@@ -87,7 +100,9 @@ def isComma(parsed):
 def isObjectContents(parsed):
     parsedSingleObjectContent = isSingleObjectContent(parsed)
     if parsedSingleObjectContent[2]:
-        return parsedSingleObjectContent
+        parsedSingleObjectContent = isSingleES6ObjectContent(parsed)
+        if parsedSingleObjectContent[2]:
+            return parsedSingleObjectContent
 
     parsedComma = isComma(parsedSingleObjectContent)
     if parsedComma[2]:
